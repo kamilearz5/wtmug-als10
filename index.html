@@ -2,8 +2,8 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALŞ10 - Birleşik PWA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ALŞ10 - Dosya Paylaşımı</title>
     <link rel="manifest" href="manifest.json">
     <!-- Font Awesome İkonları -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,19 +12,16 @@
     
     <style>
         :root {
-            --primary: #4F46E5;
-            --primary-hover: #4338CA;
+            --primary: #6366F1; /* Indigo */
+            --primary-gradient: linear-gradient(135deg, #6366F1, #8B5CF6);
             --success: #10B981;
-            --success-hover: #059669;
-            --danger: #EF4444;
-            --danger-hover: #DC2626;
-            --bg-color: #F3F4F6;
+            --bg-color: #F8FAFC;
             --card-bg: #FFFFFF;
-            --text-main: #1F2937;
-            --text-muted: #6B7280;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
 
         body { 
             background-color: var(--bg-color); 
@@ -32,233 +29,299 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            min-height: 100vh; 
-            padding: 20px;
+            height: 100vh;
+            overflow: hidden;
         }
 
+        /* Mobil Uygulama Çerçevesi */
         .app-container { 
             width: 100%; 
-            max-width: 500px; 
+            max-width: 480px; 
+            height: 100%;
+            max-height: 850px;
             background: var(--card-bg); 
-            border-radius: 24px; 
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1), 0 0 20px rgba(0,0,0,0.02); 
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
             position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden;
         }
 
-        .header {
-            background: linear-gradient(135deg, var(--primary), #818CF8);
-            padding: 30px 20px;
+        @media (min-width: 481px) {
+            .app-container { border-radius: 32px; height: 90vh; }
+        }
+
+        /* Üst Bar */
+        .top-bar {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            background: var(--card-bg);
+            border-bottom: 1px solid #F1F5F9;
+            z-index: 10;
+        }
+        .top-bar h2 { font-size: 18px; font-weight: 700; flex-grow: 1; text-align: center; }
+        .back-btn { background: none; border: none; font-size: 20px; color: var(--text-main); cursor: pointer; padding: 5px; display: none; }
+
+        /* İçerik Alanı */
+        .content { padding: 24px; flex-grow: 1; overflow-y: auto; }
+
+        /* Ana Ekran Seçim Kartları */
+        .role-card {
+            background: var(--card-bg);
+            border: 2px solid #E2E8F0;
+            border-radius: 20px;
+            padding: 25px 20px;
+            margin-bottom: 20px;
             text-align: center;
-            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
         }
-
-        .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
-        .header p { font-size: 14px; opacity: 0.9; }
-
-        .content { padding: 25px; }
-
-        .hidden { display: none !important; }
+        .role-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.2); }
+        .role-icon { font-size: 40px; margin-bottom: 15px; }
+        .role-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .role-desc { font-size: 14px; color: var(--text-muted); line-height: 1.4; }
 
         /* Butonlar */
-        .btn { 
-            width: 100%; 
-            padding: 16px; 
-            border: none; 
-            border-radius: 14px; 
-            font-size: 16px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
+        .btn-main {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            background: var(--primary-gradient);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 10px;
-            transition: all 0.2s ease;
-            margin-bottom: 12px;
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            transition: transform 0.2s;
         }
-        
-        .btn:active { transform: scale(0.98); }
-        
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
-        .btn-primary:hover { background: var(--primary-hover); }
-        
-        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
-        .btn-success:hover { background: var(--success-hover); }
-        
-        .btn-danger { background: #FEE2E2; color: var(--danger); margin-bottom: 20px; }
-        .btn-danger:hover { background: #FECACA; }
+        .btn-main:active { transform: scale(0.96); }
 
-        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
-        .btn-outline:hover { background: #EEF2FF; }
-
-        /* Kartlar ve Kutular */
-        .card { 
-            background: #F9FAFB; 
-            border: 1px solid #E5E7EB; 
-            border-radius: 16px; 
-            padding: 20px; 
-            margin-bottom: 15px; 
+        /* QR Ekranı */
+        .qr-container {
+            background: white;
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
         }
+        #qrcode-hoca { margin: 10px 0; }
+        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--success); margin-right: 8px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
 
-        .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
-        .card p { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; }
+        /* Kamera (Tarayıcı) */
+        #qr-reader { width: 100%; border-radius: 20px; overflow: hidden; border: none; margin-bottom: 20px; }
 
-        /* Input */
-        input[type="text"], input[type="file"] {
-            width: 100%; padding: 14px; border: 1px solid #D1D5DB; border-radius: 12px; font-size: 14px; margin-bottom: 12px; background: white;
-        }
-        input[type="text"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-
-        /* Durum ve İlerleme */
-        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #E0E7FF; color: var(--primary); margin-bottom: 15px; }
+        /* Dosya Transfer Ekranı (Sohbet Benzeri) */
+        .transfer-area { display: none; flex-direction: column; height: 100%; }
+        .chat-box { flex-grow: 1; background: #F8FAFC; border-radius: 20px; padding: 15px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #E2E8F0; display: flex; flex-direction: column; gap: 10px;}
         
-        .progress-container { width: 100%; background: #E5E7EB; border-radius: 10px; height: 12px; overflow: hidden; margin-top: 15px; display: none; }
-        .progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.3s ease; }
+        .message { background: white; padding: 12px 16px; border-radius: 16px; border-bottom-left-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-size: 14px; max-width: 85%; align-self: flex-start; display: flex; align-items: center; gap: 10px; animation: slideIn 0.3s ease; }
+        .message.mine { background: #E0E7FF; align-self: flex-end; border-bottom-left-radius: 16px; border-bottom-right-radius: 4px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .file-icon { font-size: 24px; color: var(--primary); }
+        .file-info { display: flex; flex-direction: column; }
+        .file-name { font-weight: 600; color: var(--text-main); }
+        .file-size { font-size: 12px; color: var(--text-muted); }
+        .download-btn { background: var(--success); color: white; padding: 6px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 600; margin-left: auto; }
 
-        /* QR Alanları */
-        #qr-reader { width: 100%; border-radius: 16px; overflow: hidden; border: 2px dashed #D1D5DB; margin-bottom: 15px; }
-        #qrcode-hoca { display: flex; justify-content: center; margin: 20px 0; padding: 15px; background: white; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        /* Yükleme Çubuğu */
+        .upload-area { background: white; padding: 15px; border-radius: 20px; border: 1px dashed #CBD5E1; text-align: center; }
+        .progress-bar-container { width: 100%; background: #E2E8F0; border-radius: 10px; height: 8px; margin-top: 10px; display: none; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--success); width: 0%; transition: width 0.2s; }
 
-        /* Flex Row */
-        .flex-row { display: flex; gap: 10px; }
-        .flex-row .btn { margin-bottom: 0; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     
-    <!-- HEADER -->
-    <div class="header">
-        <h1><i class="fa-solid fa-layer-group"></i> ALŞ10</h1>
-        <p>Birleşik PWA Uygulaması</p>
+    <!-- ÜST BAR -->
+    <div class="top-bar">
+        <button class="back-btn" id="backBtn" onclick="goHome()"><i class="fa-solid fa-arrow-left"></i></button>
+        <h2 id="app-title">ALŞ10 Paylaşım</h2>
+        <div style="width: 30px;"></div> <!-- Denge için -->
     </div>
 
-    <div class="content">
-        <!-- ANA EKRAN -->
-        <div id="ana-ekran">
-            <p style="text-align: center; margin-bottom: 20px; font-weight: 500;">Lütfen bir işlem seçin</p>
-            <button onclick="uygulamaAc('als08')" class="btn btn-success"><i class="fa-solid fa-tower-broadcast"></i> ALŞ08 - Web/Mobil P2P</button>
-            <button onclick="uygulamaAc('als09')" class="btn btn-primary"><i class="fa-solid fa-qrcode"></i> ALŞ09 - Dosya Transferi</button>
-        </div>
-
-        <!-- ALŞ08 EKRANI -->
-        <div id="als08-ekran" class="hidden">
-            <button class="btn btn-danger" onclick="anaEkranaDon()"><i class="fa-solid fa-arrow-left"></i> Ana Ekrana Dön</button>
+    <div class="content" id="main-content">
+        
+        <!-- 1. ANA EKRAN (ROL SEÇİMİ) -->
+        <div id="screen-home">
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 15px;">Dosya paylaşmak için rolünüzü seçin</p>
             
-            <div class="card">
-                <h3><i class="fa-solid fa-link" style="color:var(--primary)"></i> P2P Bağlantı Yönetimi</h3>
-                <span id="my-id" class="status-badge">ID: Oluşturuluyor...</span>
-                <input type="text" id="peer-id-input" placeholder="Karşı tarafın ID'sini girin...">
-                <button onclick="baglan()" class="btn btn-outline"><i class="fa-solid fa-plug"></i> Bağlan</button>
-            </div>
-            
-            <div class="card">
-                <h3><i class="fa-solid fa-paper-plane" style="color:var(--success)"></i> Dosya Gönder</h3>
-                <input type="file" id="file-input">
-                <button onclick="dosyaGonder()" class="btn btn-success"><i class="fa-solid fa-upload"></i> Gönder</button>
-                <div id="progress-container" class="progress-container">
-                    <div id="progress" class="progress-bar"></div>
-                </div>
+            <div class="role-card" onclick="startRole('hoca')">
+                <div class="role-icon" style="color: var(--primary);"><i class="fa-solid fa-chalkboard-user"></i></div>
+                <div class="role-title">Hoca Modu</div>
+                <div class="role-desc">QR kod oluşturun, öğrencilerin size dosya göndermesini sağlayın.</div>
             </div>
 
-            <div class="card">
-                <h3><i class="fa-solid fa-download" style="color:#F59E0B"></i> Gelen Dosyalar</h3>
-                <div id="gelen-dosyalar" style="font-size: 14px;">
-                    <p style="color: var(--text-muted);">Henüz dosya alınmadı.</p>
-                </div>
+            <div class="role-card" onclick="startRole('ogrenci')">
+                <div class="role-icon" style="color: var(--success);"><i class="fa-solid fa-user-graduate"></i></div>
+                <div class="role-title">Öğrenci Modu</div>
+                <div class="role-desc">Hocanın QR kodunu okutun ve dosyanızı doğrudan gönderin.</div>
             </div>
         </div>
 
-        <!-- ALŞ09 EKRANI -->
-        <div id="als09-ekran" class="hidden">
-            <button class="btn btn-danger" onclick="anaEkranaDon()"><i class="fa-solid fa-arrow-left"></i> Ana Ekrana Dön</button>
-            
-            <div class="card">
-                <h3><i class="fa-solid fa-users" style="color:var(--primary)"></i> Rol Seçimi</h3>
-                <div class="flex-row">
-                    <button onclick="modSec('hoca')" class="btn btn-outline">Hoca Modu</button>
-                    <button onclick="modSec('ogrenci')" class="btn btn-outline">Öğrenci Modu</button>
-                </div>
+        <!-- 2. HOCA EKRANI (QR GÖSTER) -->
+        <div id="screen-hoca" class="hidden">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span class="status-dot"></span> <span style="font-size: 14px; font-weight: 600; color: var(--success);">Yayında</span>
             </div>
-
-            <!-- HOCA MODU -->
-            <div id="hoca-mod" class="hidden card" style="border-color: var(--primary);">
-                <h3><i class="fa-solid fa-chalkboard-user" style="color:var(--primary)"></i> Hoca Modu</h3>
-                <p>Öğrenciler bu QR kodu okutarak size bağlanabilir.</p>
+            
+            <div class="qr-container">
+                <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 15px;">Öğrenciler bu kodu okutsun</p>
                 <div id="qrcode-hoca"></div>
-                <button onclick="qrKodUret()" class="btn btn-primary">QR Kod Oluştur</button>
+            </div>
+            <p style="text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted);"><i class="fa-solid fa-shield-halved"></i> P2P Bağlantısı Bekleniyor...</p>
+        </div>
+
+        <!-- 3. ÖĞRENCİ EKRANI (KAMERA) -->
+        <div id="screen-ogrenci" class="hidden">
+            <div id="qr-reader"></div>
+            <p style="text-align: center; font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Kamerayı hocanın QR koduna tutun</p>
+            <button class="btn-main" onclick="kameraAc()" id="scanBtn"><i class="fa-solid fa-camera"></i> Kamerayı Aç</button>
+        </div>
+
+        <!-- 4. ORTAK EKRAN (DOSYA TRANSFERİ) -->
+        <div id="screen-transfer" class="transfer-area">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                <span class="status-dot"></span> <span style="font-size: 14px; font-weight: 600; color: var(--success);" id="conn-status">Bağlantı Kuruldu</span>
             </div>
 
-            <!-- ÖĞRENCİ MODU -->
-            <div id="ogrenci-mod" class="hidden card" style="border-color: var(--success);">
-                <h3><i class="fa-solid fa-user-graduate" style="color:var(--success)"></i> Öğrenci Modu</h3>
-                <p>Hocanın QR kodunu kamera ile okutun.</p>
-                <div id="qr-reader"></div>
-                <button onclick="kameraAc()" class="btn btn-success">Kamerayı Aç</button>
-                <div id="qr-result" class="hidden" style="margin-top: 15px; text-align: center;"></div>
+            <div class="chat-box" id="chat-box">
+                <div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 10px;">Güvenli P2P bağlantısı aktif.</div>
+            </div>
+
+            <div class="upload-area" id="upload-area">
+                <input type="file" id="file-input" style="display: none;" onchange="dosyaGonder()">
+                <button class="btn-main" onclick="document.getElementById('file-input').click()">
+                    <i class="fa-solid fa-paperclip"></i> Dosya Seç ve Gönder
+                </button>
+                <div class="progress-bar-container" id="progress-container">
+                    <div class="progress-fill" id="progress"></div>
+                </div>
             </div>
         </div>
+
     </div>
 </div>
 
-<!-- Kütüphaneler (Javascript) -->
+<!-- Kütüphaneler -->
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-    // --- SERVICE WORKER ---
+    // --- SERVICE WORKER (PWA) ---
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Hatası:", err));
+        navigator.serviceWorker.register('sw.js').catch(err => console.log(err));
     }
 
-    // --- YÖNLENDİRME MANTIĞI ---
-    function uygulamaAc(uygulama) {
-        document.getElementById('ana-ekran').classList.add('hidden');
-        document.getElementById(uygulama + '-ekran').classList.remove('hidden');
-    }
-
-    function anaEkranaDon() {
-        document.getElementById('als08-ekran').classList.add('hidden');
-        document.getElementById('als09-ekran').classList.add('hidden');
-        document.getElementById('ana-ekran').classList.remove('hidden');
-        
-        if(window.html5QrCode) { window.html5QrCode.stop().catch(e => {}); }
-        if(window.peer) { window.peer.destroy(); }
-        
-        // Ana ekrana dönünce PeerJS'i yeniden başlat (yeni ID almak için)
-        setTimeout(peerBaslat, 500);
-    }
-
-    // ==========================================
-    // ALŞ08 & ALŞ09: WebRTC (PeerJS) ve P2P
-    // ==========================================
+    // --- DEĞİŞKENLER ---
     let peer, conn;
+    let currentRole = null;
+    let html5QrCode;
     const CHUNK_SIZE = 16 * 1024; // 16KB Parçalama
 
-    function peerBaslat() {
-        peer = new Peer(); 
+    // --- UI YÖNETİMİ ---
+    function showScreen(screenId) {
+        document.querySelectorAll('.content > div').forEach(el => el.classList.add('hidden'));
+        document.getElementById(screenId).classList.remove('hidden');
+        
+        const backBtn = document.getElementById('backBtn');
+        const title = document.getElementById('app-title');
+
+        if (screenId === 'screen-home') {
+            backBtn.style.display = 'none';
+            title.innerText = 'ALŞ10 Paylaşım';
+            // Temizlik
+            if(html5QrCode) { html5QrCode.stop().catch(e=>{}); }
+            if(peer) { peer.destroy(); }
+        } else {
+            backBtn.style.display = 'block';
+            if (screenId === 'screen-hoca') title.innerText = 'Hoca Modu';
+            if (screenId === 'screen-ogrenci') title.innerText = 'QR Tara';
+            if (screenId === 'screen-transfer') title.innerText = 'Dosya Transferi';
+        }
+    }
+
+    function goHome() {
+        if(confirm("Bağlantıyı kesip ana ekrana dönmek istiyor musunuz?")) {
+            if(conn) conn.close();
+            showScreen('screen-home');
+            currentRole = null;
+            document.getElementById('chat-box').innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 10px;">Güvenli P2P bağlantısı aktif.</div>';
+        }
+    }
+
+    // --- ROL BAŞLATMA ---
+    function startRole(role) {
+        currentRole = role;
+        peer = new Peer();
+
         peer.on('open', (id) => {
-            document.getElementById('my-id').innerText = "ID: " + id;
+            if (role === 'hoca') {
+                showScreen('screen-hoca');
+                // QR Kod Üret
+                document.getElementById("qrcode-hoca").innerHTML = "";
+                new QRCode(document.getElementById("qrcode-hoca"), {
+                    text: id,
+                    width: 220,
+                    height: 220,
+                    colorDark : "#0F172A",
+                    colorLight : "#ffffff",
+                });
+            } else {
+                showScreen('screen-ogrenci');
+            }
         });
+
+        // Gelen bağlantıları dinle (Hoca için)
         peer.on('connection', (connection) => {
             conn = connection;
             setupConnection();
+            showScreen('screen-transfer');
         });
     }
-    peerBaslat();
 
-    function baglan() {
-        const targetId = document.getElementById('peer-id-input').value;
-        if(!targetId) return alert("Lütfen bir ID girin!");
-        conn = peer.connect(targetId);
-        setupConnection();
+    // --- KAMERA (ÖĞRENCİ) ---
+    function kameraAc() {
+        document.getElementById('scanBtn').style.display = 'none';
+        if(!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); }
+        
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => {
+                html5QrCode.stop();
+                document.getElementById('scanBtn').style.display = 'flex';
+                // Hocanın ID'sini okuduk, otomatik bağlan
+                conn = peer.connect(decodedText);
+                setupConnection();
+                showScreen('screen-transfer');
+            },
+            (err) => { /* Sessiz hata */ }
+        ).catch(err => {
+            alert("Kamera açılamadı. HTTPS üzerinden bağlandığınızdan emin olun.");
+            document.getElementById('scanBtn').style.display = 'flex';
+        });
     }
 
+    // --- WEBRTC BAĞLANTI VE DOSYA TRANSFERİ (CHUNKING) ---
     function setupConnection() {
         conn.on('open', () => {
-            alert("P2P Bağlantı Başarıyla Kuruldu!");
+            document.getElementById('conn-status').innerText = "Bağlantı Kuruldu";
         });
 
         let receivedChunks = [];
@@ -268,29 +331,37 @@
             if (data.type === 'meta') {
                 receivedFileName = data.name;
                 receivedChunks = [];
-                document.getElementById('progress-container').style.display = 'block';
             } else if (data.type === 'chunk') {
                 receivedChunks.push(data.data);
                 let progress = Math.round((receivedChunks.length * CHUNK_SIZE / data.totalSize) * 100);
                 if(progress > 100) progress = 100;
+                document.getElementById('progress-container').style.display = 'block';
                 document.getElementById('progress').style.width = progress + "%";
             } else if (data.type === 'done') {
+                // Dosyayı birleştir
                 const blob = new Blob(receivedChunks);
                 const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = receivedFileName;
-                link.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> İndir: ` + receivedFileName;
-                link.style.display = "block";
-                link.style.color = "var(--primary)";
-                link.style.textDecoration = "none";
-                link.style.padding = "10px 0";
                 
-                document.getElementById('gelen-dosyalar').innerHTML = "";
-                document.getElementById('gelen-dosyalar').appendChild(link);
+                // Sohbete mesaj olarak ekle
+                const chatBox = document.getElementById('chat-box');
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'message';
+                msgDiv.innerHTML = `
+                    <i class="fa-solid fa-file-arrow-down file-icon" style="color: var(--success);"></i>
+                    <div class="file-info">
+                        <span class="file-name">${receivedFileName}</span>
+                        <span class="file-size">Yeni Dosya</span>
+                    </div>
+                    <a href="${url}" download="${receivedFileName}" class="download-btn">İndir</a>
+                `;
+                chatBox.appendChild(msgDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
                 
-                alert("Dosya başarıyla alındı!");
-                setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; document.getElementById('progress').style.width = "0%"; }, 2000);
+                // İlerleme çubuğunu sıfırla
+                setTimeout(() => { 
+                    document.getElementById('progress-container').style.display = 'none'; 
+                    document.getElementById('progress').style.width = "0%"; 
+                }, 1500);
             }
         });
     }
@@ -298,10 +369,23 @@
     function dosyaGonder() {
         const fileInput = document.getElementById('file-input');
         const file = fileInput.files[0];
-        if (!file) return alert("Lütfen bir dosya seçin!");
-        if (!conn || !conn.open) return alert("Önce P2P bağlantısı kurun!");
+        if (!file) return;
+        if (!conn || !conn.open) return alert("Bağlantı henüz kurulmadı!");
 
-        document.getElementById('progress-container').style.display = 'block';
+        // Sohbete kendi mesajımızı ekle
+        const chatBox = document.getElementById('chat-box');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message mine';
+        msgDiv.innerHTML = `
+            <i class="fa-solid fa-file-arrow-up file-icon"></i>
+            <div class="file-info">
+                <span class="file-name">${file.name}</span>
+                <span class="file-size">${(file.size / 1024).toFixed(1)} KB</span>
+            </div>
+        `;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
         conn.send({ type: 'meta', name: file.name, size: file.size });
 
         let offset = 0;
@@ -313,14 +397,18 @@
                 offset += e.target.result.byteLength;
                 
                 let progress = Math.round((offset / file.size) * 100);
+                document.getElementById('progress-container').style.display = 'block';
                 document.getElementById('progress').style.width = progress + "%";
 
                 if (offset < file.size) {
                     readSlice(offset);
                 } else {
                     conn.send({ type: 'done' });
-                    alert("Dosya başarıyla gönderildi!");
-                    setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; document.getElementById('progress').style.width = "0%"; }, 2000);
+                    setTimeout(() => { 
+                        document.getElementById('progress-container').style.display = 'none'; 
+                        document.getElementById('progress').style.width = "0%"; 
+                    }, 1500);
+                    fileInput.value = ""; // Inputu sıfırla
                 }
             }
         };
@@ -330,55 +418,6 @@
             reader.readAsArrayBuffer(slice);
         };
         readSlice(0);
-    }
-
-    // ==========================================
-    // QR KOD İŞLEMLERİ
-    // ==========================================
-    function modSec(mod) {
-        document.getElementById('hoca-mod').classList.add('hidden');
-        document.getElementById('ogrenci-mod').classList.add('hidden');
-        document.getElementById(mod + '-mod').classList.remove('hidden');
-    }
-
-    function qrKodUret() {
-        const myId = peer.id;
-        if(!myId) return alert("ID henüz oluşmadı, lütfen bekleyin.");
-        
-        document.getElementById("qrcode-hoca").innerHTML = "";
-        new QRCode(document.getElementById("qrcode-hoca"), {
-            text: myId,
-            width: 200,
-            height: 200,
-            colorDark : "#1F2937",
-            colorLight : "#ffffff",
-        });
-    }
-
-    let html5QrCode;
-    function kameraAc() {
-        document.getElementById('qr-result').classList.add('hidden');
-        if(!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); }
-        
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-                html5QrCode.stop();
-                document.getElementById('qr-result').classList.remove('hidden');
-                document.getElementById('qr-result').innerHTML = `
-                    <p style="color:var(--success); font-weight:600; margin-bottom:10px;">Hoca ID Okundu!</p>
-                    <button onclick="otomatikBaglan('${decodedText}')" class="btn btn-success">Hocaya Bağlan</button>`;
-            },
-            (err) => { /* Hata yoksay */ }
-        ).catch(err => alert("Kamera açılamadı: " + err));
-    }
-
-    function otomatikBaglan(targetId) {
-        document.getElementById('qr-result').classList.add('hidden');
-        uygulamaAc('als08'); 
-        document.getElementById('peer-id-input').value = targetId;
-        baglan();
     }
 </script>
 
