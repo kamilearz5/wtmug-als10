@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALŞ10 - Birleşik PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .hidden { display: none !important; }
+        button { width: 100%; padding: 14px; margin: 8px 0; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; background: #007bff; color: white; font-weight: 600; transition: 0.2s; }
+        button:hover { background: #0056b3; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #bd2130; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-warning:hover { background: #e0a800; }
+        .kutu { border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px; background: #fafafa; }
+        #qr-reader { width: 100%; max-width: 400px; margin: auto; }
+        .flex-row { display: flex; gap: 10px; }
+        .flex-row button { flex: 1; }
+        .progress-bar { width: 100%; background: #e9ecef; border-radius: 5px; margin-top: 10px; height: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; background: #28a745; width: 0%; transition: width 0.3s; text-align: center; color: white; font-size: 12px; line-height: 20px; }
+        #qr-result, #kendi-qr { text-align: center; margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 8px; word-break: break-all; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- ANA EKRAN (ALŞ10) -->
+    <div id="ana-ekran">
+        <h2 style="text-align:center;">ALŞ10 Birleşik PWA</h2>
+        <p style="text-align:center;">Lütfen işlem yapmak istediğiniz uygulamayı seçin:</p>
+        <button onclick="uygulamaAc('als08')" class="btn-success">ALŞ08 (Web/Mobil P2P)</button>
+        <button onclick="uygulamaAc('als09')">ALŞ09 (Dosya Transferi & QR)</button>
+    </div>
+
+    <!-- ALŞ08 EKRANI (P2P & WebRTC) -->
+    <div id="als08-ekran" class="hidden">
+        <button class="btn-danger" onclick="anaEkranaDon()">← Ana Ekrana Dön</button>
+        <div class="kutu">
+            <h3>ALŞ08: WebRTC P2P Bağlantısı</h3>
+            <p>Bilgisayar ve telefon arasında doğrudan bağlantı kurun.</p>
+            <div id="my-id" style="font-weight:bold; color:#007bff; margin-bottom:10px;">ID: Oluşturuluyor...</div>
+            <input type="text" id="peer-id-input" placeholder="Karşı tarafın ID'sini girin" style="width:100%; padding:10px; margin-bottom:10px; box-sizing:border-box;">
+            <button onclick="baglan()">Bağlan</button>
+            
+            <div class="kutu" style="background:white; margin-top:15px;">
+                <h4>Dosya Gönder</h4>
+                <input type="file" id="file-input" style="margin-bottom:10px;">
+                <button onclick="dosyaGonder()">Gönder</button>
+                <div class="progress-bar"><div id="progress" class="progress-fill">0%</div></div>
+            </div>
+            <div class="kutu" style="background:white; margin-top:15px;">
+                <h4>Gelen Dosyalar</h4>
+                <div id="gelen-dosyalar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALŞ09 EKRANI (QR & Roller) -->
+    <div id="als09-ekran" class="hidden">
+        <button class="btn-danger" onclick="anaEkranaDon()">← Ana Ekrana Dön</button>
+        <div class="kutu">
+            <h3>ALŞ09: Hoca / Öğrenci Modu</h3>
+            <div class="flex-row">
+                <button onclick="modSec('hoca')" class="btn-warning">Hoca Modu</button>
+                <button onclick="modSec('ogrenci')" class="btn-warning">Öğrenci Modu</button>
+            </div>
+
+            <!-- HOCA MODU -->
+            <div id="hoca-mod" class="hidden kutu" style="background:white;">
+                <h4>Hoca Modu (Masaüstü)</h4>
+                <p>Öğrenciler bu QR kodu okutarak size bağlanabilir.</p>
+                <div id="qrcode-hoca" style="text-align:center; margin: 15px 0;"></div>
+                <button onclick="qrKodUret()">QR Kod Oluştur</button>
+            </div>
+
+            <!-- ÖĞRENCİ MODU -->
+            <div id="ogrenci-mod" class="hidden kutu" style="background:white;">
+                <h4>Öğrenci Modu (Mobil)</h4>
+                <p>Hocanın QR kodunu kamera ile okutun.</p>
+                <div id="qr-reader" style="margin-bottom:15px;"></div>
+                <button onclick="kameraAc()" class="btn-success">Kamerayı Aç ve Oku</button>
+                <div id="qr-result" class="hidden"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kütüphaneler -->
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+    // --- SERVICE WORKER (PWA) ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Hatası:", err));
+    }
+
+    // --- YÖNLENDİRME (ALŞ10) ---
+    function uygulamaAc(uygulama) {
+        document.getElementById('ana-ekran').classList.add('hidden');
+        document.getElementById(uygulama + '-ekran').classList.remove('hidden');
+    }
+
+    function anaEkranaDon() {
+        document.getElementById('als08-ekran').classList.add('hidden');
+        document.getElementById('als09-ekran').classList.add('hidden');
+        document.getElementById('ana-ekran').classList.remove('hidden');
+        
+        // Kamera ve P2P bağlantılarını temizle
+        if(window.html5QrCode) { window.html5QrCode.stop().catch(e => {}); }
+        if(window.peer) { window.peer.destroy(); }
+    }
+
+    // ==========================================
+    // ALŞ08: WebRTC (PeerJS) ve Dosya Transferi
+    // ==========================================
+    let peer, conn;
+    const CHUNK_SIZE = 16 * 1024; // 16KB Parçalama (Ödev Gereksinimi)
+
+    window.onload = () => {
+        // Her iki taraf için de PeerJS başlat
+        peer = new Peer(); 
+        
+        peer.on('open', (id) => {
+            document.getElementById('my-id').innerText = "Benim ID'm: " + id;
+        });
+
+        // Gelen bağlantıları dinle
+        peer.on('connection', (connection) => {
+            conn = connection;
+            setupConnection();
+        });
+    };
+
+    function baglan() {
+        const targetId = document.getElementById('peer-id-input').value;
+        if(!targetId) return alert("ID girin!");
+        
+        conn = peer.connect(targetId);
+        setupConnection();
+    }
+
+    function setupConnection() {
+        conn.on('open', () => {
+            alert("Bağlantı Kuruldu!");
+        });
+
+        // Gelen verileri dinle (Chunking Mantığı)
+        let receivedChunks = [];
+        let receivedFileName = "";
+
+        conn.on('data', (data) => {
+            if (data.type === 'meta') {
+                // Dosya bilgisi geldi
+                receivedFileName = data.name;
+                receivedChunks = [];
+            } else if (data.type === 'chunk') {
+                // Parça geldi
+                receivedChunks.push(data.data);
+                let progress = Math.round((receivedChunks.length * CHUNK_SIZE / data.totalSize) * 100);
+                if(progress > 100) progress = 100;
+                document.getElementById('progress').style.width = progress + "%";
+                document.getElementById('progress').innerText = progress + "%";
+            } else if (data.type === 'done') {
+                // Transfer bitti, dosyayı birleştir
+                const blob = new Blob(receivedChunks);
+                const url = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = receivedFileName;
+                link.innerText = "İndir: " + receivedFileName;
+                link.style.display = "block";
+                document.getElementById('gelen-dosyalar').appendChild(link);
+                
+                alert("Dosya başarıyla alındı!");
+                document.getElementById('progress').style.width = "0%";
+            }
+        });
+    }
+
+    function dosyaGonder() {
+        const fileInput = document.getElementById('file-input');
+        const file = fileInput.files[0];
+        if (!file) return alert("Dosya seçin!");
+        if (!conn || !conn.open) return alert("Önce bağlantı kurun!");
+
+        // Dosya boyutunu gönder
+        conn.send({ type: 'meta', name: file.name, size: file.size });
+
+        let offset = 0;
+        const reader = new FileReader();
+
+        // Dosyayı 16KB'lık parçalar halinde oku ve gönder
+        reader.onload = (e) => {
+            if (e.target.readyState === FileReader.DONE) {
+                conn.send({ type: 'chunk', data: e.target.result, totalSize: file.size });
+                offset += e.target.result.byteLength;
+                
+                // İlerleme çubuğunu güncelle
+                let progress = Math.round((offset / file.size) * 100);
+                document.getElementById('progress').style.width = progress + "%";
+                document.getElementById('progress').innerText = progress + "%";
+
+                if (offset < file.size) {
+                    readSlice(offset);
+                } else {
+                    conn.send({ type: 'done' }); // Transfer bitti
+                    alert("Dosya gönderildi!");
+                }
+            }
+        };
+
+        const readSlice = (o) => {
+            const slice = file.slice(o, o + CHUNK_SIZE);
+            reader.readAsArrayBuffer(slice);
+        };
+
+        readSlice(0);
+    }
+
+    // ==========================================
+    // ALŞ09: Roller ve QR Kod İşlemleri
+    // ==========================================
+    function modSec(mod) {
+        document.getElementById('hoca-mod').classList.add('hidden');
+        document.getElementById('ogrenci-mod').classList.add('hidden');
+        document.getElementById(mod + '-mod').classList.remove('hidden');
+    }
+
+    function qrKodUret() {
+        // Hocanın PeerJS ID'sini QR koda gömüyoruz
+        const myId = peer.id;
+        document.getElementById("qrcode-hoca").innerHTML = "";
+        new QRCode(document.getElementById("qrcode-hoca"), {
+            text: myId,
+            width: 200,
+            height: 200
+        });
+    }
+
+    let html5QrCode;
+    function kameraAc() {
+        document.getElementById('qr-result').classList.add('hidden');
+        if(!html5QrCode) { html5QrCode = new Html5Qrcode("qr-reader"); }
+        
+        html5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => {
+                html5QrCode.stop();
+                document.getElementById('qr-result').classList.remove('hidden');
+                document.getElementById('qr-result').innerHTML = `<strong>Hoca ID Okundu:</strong> ${decodedText}<br><br><button onclick="otomatikBaglan('${decodedText}')">Hocaya Bağlan</button>`;
+            },
+            (err) => { /* Hata yoksay */ }
+        ).catch(err => alert("Kamera açılamadı: " + err));
+    }
+
+    function otomatikBaglan(targetId) {
+        document.getElementById('qr-result').classList.add('hidden');
+        uygulamaAc('als08'); // ALŞ08 ekranına geç
+        document.getElementById('peer-id-input').value = targetId;
+        baglan();
+    }
+</script>
+
+</body>
+</html>
