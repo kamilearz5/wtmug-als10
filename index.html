@@ -5,103 +5,215 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALŞ10 - Birleşik PWA</title>
     <link rel="manifest" href="manifest.json">
+    <!-- Font Awesome İkonları -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 15px; background: #f0f2f5; color: #333; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338CA;
+            --success: #10B981;
+            --success-hover: #059669;
+            --danger: #EF4444;
+            --danger-hover: #DC2626;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+
+        .app-container { 
+            width: 100%; 
+            max-width: 500px; 
+            background: var(--card-bg); 
+            border-radius: 24px; 
+            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1), 0 0 20px rgba(0,0,0,0.02); 
+            overflow: hidden;
+            position: relative;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), #818CF8);
+            padding: 30px 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 { font-size: 24px; font-weight: 700; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+
+        .content { padding: 25px; }
+
         .hidden { display: none !important; }
-        button { width: 100%; padding: 14px; margin: 8px 0; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; background: #007bff; color: white; font-weight: 600; transition: 0.2s; }
-        button:hover { background: #0056b3; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #bd2130; }
-        .btn-success { background: #28a745; }
-        .btn-success:hover { background: #218838; }
-        .btn-warning { background: #ffc107; color: #333; }
-        .btn-warning:hover { background: #e0a800; }
-        .kutu { border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-top: 15px; background: #fafafa; }
-        #qr-reader { width: 100%; max-width: 400px; margin: auto; }
+
+        /* Butonlar */
+        .btn { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 14px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 10px;
+            transition: all 0.2s ease;
+            margin-bottom: 12px;
+        }
+        
+        .btn:active { transform: scale(0.98); }
+        
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .btn-primary:hover { background: var(--primary-hover); }
+        
+        .btn-success { background: var(--success); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .btn-success:hover { background: var(--success-hover); }
+        
+        .btn-danger { background: #FEE2E2; color: var(--danger); margin-bottom: 20px; }
+        .btn-danger:hover { background: #FECACA; }
+
+        .btn-outline { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: #EEF2FF; }
+
+        /* Kartlar ve Kutular */
+        .card { 
+            background: #F9FAFB; 
+            border: 1px solid #E5E7EB; 
+            border-radius: 16px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+        }
+
+        .card h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; color: var(--text-main); }
+        .card p { font-size: 13px; color: var(--text-muted); margin-bottom: 15px; }
+
+        /* Input */
+        input[type="text"], input[type="file"] {
+            width: 100%; padding: 14px; border: 1px solid #D1D5DB; border-radius: 12px; font-size: 14px; margin-bottom: 12px; background: white;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+
+        /* Durum ve İlerleme */
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #E0E7FF; color: var(--primary); margin-bottom: 15px; }
+        
+        .progress-container { width: 100%; background: #E5E7EB; border-radius: 10px; height: 12px; overflow: hidden; margin-top: 15px; display: none; }
+        .progress-bar { height: 100%; background: var(--success); width: 0%; transition: width 0.3s ease; }
+
+        /* QR Alanları */
+        #qr-reader { width: 100%; border-radius: 16px; overflow: hidden; border: 2px dashed #D1D5DB; margin-bottom: 15px; }
+        #qrcode-hoca { display: flex; justify-content: center; margin: 20px 0; padding: 15px; background: white; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        /* Flex Row */
         .flex-row { display: flex; gap: 10px; }
-        .flex-row button { flex: 1; }
-        .progress-bar { width: 100%; background: #e9ecef; border-radius: 5px; margin-top: 10px; height: 20px; overflow: hidden; }
-        .progress-fill { height: 100%; background: #28a745; width: 0%; transition: width 0.3s; text-align: center; color: white; font-size: 12px; line-height: 20px; }
-        #qr-result, #kendi-qr { text-align: center; margin-top: 15px; padding: 10px; background: #e9ecef; border-radius: 8px; word-break: break-all; }
+        .flex-row .btn { margin-bottom: 0; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- ANA EKRAN (ALŞ10) -->
-    <div id="ana-ekran">
-        <h2 style="text-align:center;">ALŞ10 Birleşik PWA</h2>
-        <p style="text-align:center;">Lütfen işlem yapmak istediğiniz uygulamayı seçin:</p>
-        <button onclick="uygulamaAc('als08')" class="btn-success">ALŞ08 (Web/Mobil P2P)</button>
-        <button onclick="uygulamaAc('als09')">ALŞ09 (Dosya Transferi & QR)</button>
+<div class="app-container">
+    
+    <!-- HEADER -->
+    <div class="header">
+        <h1><i class="fa-solid fa-layer-group"></i> ALŞ10</h1>
+        <p>Birleşik PWA Uygulaması</p>
     </div>
 
-    <!-- ALŞ08 EKRANI (P2P & WebRTC) -->
-    <div id="als08-ekran" class="hidden">
-        <button class="btn-danger" onclick="anaEkranaDon()">← Ana Ekrana Dön</button>
-        <div class="kutu">
-            <h3>ALŞ08: WebRTC P2P Bağlantısı</h3>
-            <p>Bilgisayar ve telefon arasında doğrudan bağlantı kurun.</p>
-            <div id="my-id" style="font-weight:bold; color:#007bff; margin-bottom:10px;">ID: Oluşturuluyor...</div>
-            <input type="text" id="peer-id-input" placeholder="Karşı tarafın ID'sini girin" style="width:100%; padding:10px; margin-bottom:10px; box-sizing:border-box;">
-            <button onclick="baglan()">Bağlan</button>
+    <div class="content">
+        <!-- ANA EKRAN -->
+        <div id="ana-ekran">
+            <p style="text-align: center; margin-bottom: 20px; font-weight: 500;">Lütfen bir işlem seçin</p>
+            <button onclick="uygulamaAc('als08')" class="btn btn-success"><i class="fa-solid fa-tower-broadcast"></i> ALŞ08 - Web/Mobil P2P</button>
+            <button onclick="uygulamaAc('als09')" class="btn btn-primary"><i class="fa-solid fa-qrcode"></i> ALŞ09 - Dosya Transferi</button>
+        </div>
+
+        <!-- ALŞ08 EKRANI -->
+        <div id="als08-ekran" class="hidden">
+            <button class="btn btn-danger" onclick="anaEkranaDon()"><i class="fa-solid fa-arrow-left"></i> Ana Ekrana Dön</button>
             
-            <div class="kutu" style="background:white; margin-top:15px;">
-                <h4>Dosya Gönder</h4>
-                <input type="file" id="file-input" style="margin-bottom:10px;">
-                <button onclick="dosyaGonder()">Gönder</button>
-                <div class="progress-bar"><div id="progress" class="progress-fill">0%</div></div>
+            <div class="card">
+                <h3><i class="fa-solid fa-link" style="color:var(--primary)"></i> P2P Bağlantı Yönetimi</h3>
+                <span id="my-id" class="status-badge">ID: Oluşturuluyor...</span>
+                <input type="text" id="peer-id-input" placeholder="Karşı tarafın ID'sini girin...">
+                <button onclick="baglan()" class="btn btn-outline"><i class="fa-solid fa-plug"></i> Bağlan</button>
             </div>
-            <div class="kutu" style="background:white; margin-top:15px;">
-                <h4>Gelen Dosyalar</h4>
-                <div id="gelen-dosyalar"></div>
+            
+            <div class="card">
+                <h3><i class="fa-solid fa-paper-plane" style="color:var(--success)"></i> Dosya Gönder</h3>
+                <input type="file" id="file-input">
+                <button onclick="dosyaGonder()" class="btn btn-success"><i class="fa-solid fa-upload"></i> Gönder</button>
+                <div id="progress-container" class="progress-container">
+                    <div id="progress" class="progress-bar"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="fa-solid fa-download" style="color:#F59E0B"></i> Gelen Dosyalar</h3>
+                <div id="gelen-dosyalar" style="font-size: 14px;">
+                    <p style="color: var(--text-muted);">Henüz dosya alınmadı.</p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- ALŞ09 EKRANI (QR & Roller) -->
-    <div id="als09-ekran" class="hidden">
-        <button class="btn-danger" onclick="anaEkranaDon()">← Ana Ekrana Dön</button>
-        <div class="kutu">
-            <h3>ALŞ09: Hoca / Öğrenci Modu</h3>
-            <div class="flex-row">
-                <button onclick="modSec('hoca')" class="btn-warning">Hoca Modu</button>
-                <button onclick="modSec('ogrenci')" class="btn-warning">Öğrenci Modu</button>
+        <!-- ALŞ09 EKRANI -->
+        <div id="als09-ekran" class="hidden">
+            <button class="btn btn-danger" onclick="anaEkranaDon()"><i class="fa-solid fa-arrow-left"></i> Ana Ekrana Dön</button>
+            
+            <div class="card">
+                <h3><i class="fa-solid fa-users" style="color:var(--primary)"></i> Rol Seçimi</h3>
+                <div class="flex-row">
+                    <button onclick="modSec('hoca')" class="btn btn-outline">Hoca Modu</button>
+                    <button onclick="modSec('ogrenci')" class="btn btn-outline">Öğrenci Modu</button>
+                </div>
             </div>
 
             <!-- HOCA MODU -->
-            <div id="hoca-mod" class="hidden kutu" style="background:white;">
-                <h4>Hoca Modu (Masaüstü)</h4>
+            <div id="hoca-mod" class="hidden card" style="border-color: var(--primary);">
+                <h3><i class="fa-solid fa-chalkboard-user" style="color:var(--primary)"></i> Hoca Modu</h3>
                 <p>Öğrenciler bu QR kodu okutarak size bağlanabilir.</p>
-                <div id="qrcode-hoca" style="text-align:center; margin: 15px 0;"></div>
-                <button onclick="qrKodUret()">QR Kod Oluştur</button>
+                <div id="qrcode-hoca"></div>
+                <button onclick="qrKodUret()" class="btn btn-primary">QR Kod Oluştur</button>
             </div>
 
             <!-- ÖĞRENCİ MODU -->
-            <div id="ogrenci-mod" class="hidden kutu" style="background:white;">
-                <h4>Öğrenci Modu (Mobil)</h4>
+            <div id="ogrenci-mod" class="hidden card" style="border-color: var(--success);">
+                <h3><i class="fa-solid fa-user-graduate" style="color:var(--success)"></i> Öğrenci Modu</h3>
                 <p>Hocanın QR kodunu kamera ile okutun.</p>
-                <div id="qr-reader" style="margin-bottom:15px;"></div>
-                <button onclick="kameraAc()" class="btn-success">Kamerayı Aç ve Oku</button>
-                <div id="qr-result" class="hidden"></div>
+                <div id="qr-reader"></div>
+                <button onclick="kameraAc()" class="btn btn-success">Kamerayı Aç</button>
+                <div id="qr-result" class="hidden" style="margin-top: 15px; text-align: center;"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Kütüphaneler -->
+<!-- Kütüphaneler (Javascript) -->
 <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <script>
-    // --- SERVICE WORKER (PWA) ---
+    // --- SERVICE WORKER ---
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(err => console.log("SW Hatası:", err));
     }
 
-    // --- YÖNLENDİRME (ALŞ10) ---
+    // --- YÖNLENDİRME MANTIĞI ---
     function uygulamaAc(uygulama) {
         document.getElementById('ana-ekran').classList.add('hidden');
         document.getElementById(uygulama + '-ekran').classList.remove('hidden');
@@ -112,75 +224,73 @@
         document.getElementById('als09-ekran').classList.add('hidden');
         document.getElementById('ana-ekran').classList.remove('hidden');
         
-        // Kamera ve P2P bağlantılarını temizle
         if(window.html5QrCode) { window.html5QrCode.stop().catch(e => {}); }
         if(window.peer) { window.peer.destroy(); }
+        
+        // Ana ekrana dönünce PeerJS'i yeniden başlat (yeni ID almak için)
+        setTimeout(peerBaslat, 500);
     }
 
     // ==========================================
-    // ALŞ08: WebRTC (PeerJS) ve Dosya Transferi
+    // ALŞ08 & ALŞ09: WebRTC (PeerJS) ve P2P
     // ==========================================
     let peer, conn;
-    const CHUNK_SIZE = 16 * 1024; // 16KB Parçalama (Ödev Gereksinimi)
+    const CHUNK_SIZE = 16 * 1024; // 16KB Parçalama
 
-    window.onload = () => {
-        // Her iki taraf için de PeerJS başlat
+    function peerBaslat() {
         peer = new Peer(); 
-        
         peer.on('open', (id) => {
-            document.getElementById('my-id').innerText = "Benim ID'm: " + id;
+            document.getElementById('my-id').innerText = "ID: " + id;
         });
-
-        // Gelen bağlantıları dinle
         peer.on('connection', (connection) => {
             conn = connection;
             setupConnection();
         });
-    };
+    }
+    peerBaslat();
 
     function baglan() {
         const targetId = document.getElementById('peer-id-input').value;
-        if(!targetId) return alert("ID girin!");
-        
+        if(!targetId) return alert("Lütfen bir ID girin!");
         conn = peer.connect(targetId);
         setupConnection();
     }
 
     function setupConnection() {
         conn.on('open', () => {
-            alert("Bağlantı Kuruldu!");
+            alert("P2P Bağlantı Başarıyla Kuruldu!");
         });
 
-        // Gelen verileri dinle (Chunking Mantığı)
         let receivedChunks = [];
         let receivedFileName = "";
 
         conn.on('data', (data) => {
             if (data.type === 'meta') {
-                // Dosya bilgisi geldi
                 receivedFileName = data.name;
                 receivedChunks = [];
+                document.getElementById('progress-container').style.display = 'block';
             } else if (data.type === 'chunk') {
-                // Parça geldi
                 receivedChunks.push(data.data);
                 let progress = Math.round((receivedChunks.length * CHUNK_SIZE / data.totalSize) * 100);
                 if(progress > 100) progress = 100;
                 document.getElementById('progress').style.width = progress + "%";
-                document.getElementById('progress').innerText = progress + "%";
             } else if (data.type === 'done') {
-                // Transfer bitti, dosyayı birleştir
                 const blob = new Blob(receivedChunks);
                 const url = URL.createObjectURL(blob);
-                
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = receivedFileName;
-                link.innerText = "İndir: " + receivedFileName;
+                link.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> İndir: ` + receivedFileName;
                 link.style.display = "block";
+                link.style.color = "var(--primary)";
+                link.style.textDecoration = "none";
+                link.style.padding = "10px 0";
+                
+                document.getElementById('gelen-dosyalar').innerHTML = "";
                 document.getElementById('gelen-dosyalar').appendChild(link);
                 
                 alert("Dosya başarıyla alındı!");
-                document.getElementById('progress').style.width = "0%";
+                setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; document.getElementById('progress').style.width = "0%"; }, 2000);
             }
         });
     }
@@ -188,31 +298,29 @@
     function dosyaGonder() {
         const fileInput = document.getElementById('file-input');
         const file = fileInput.files[0];
-        if (!file) return alert("Dosya seçin!");
-        if (!conn || !conn.open) return alert("Önce bağlantı kurun!");
+        if (!file) return alert("Lütfen bir dosya seçin!");
+        if (!conn || !conn.open) return alert("Önce P2P bağlantısı kurun!");
 
-        // Dosya boyutunu gönder
+        document.getElementById('progress-container').style.display = 'block';
         conn.send({ type: 'meta', name: file.name, size: file.size });
 
         let offset = 0;
         const reader = new FileReader();
 
-        // Dosyayı 16KB'lık parçalar halinde oku ve gönder
         reader.onload = (e) => {
             if (e.target.readyState === FileReader.DONE) {
                 conn.send({ type: 'chunk', data: e.target.result, totalSize: file.size });
                 offset += e.target.result.byteLength;
                 
-                // İlerleme çubuğunu güncelle
                 let progress = Math.round((offset / file.size) * 100);
                 document.getElementById('progress').style.width = progress + "%";
-                document.getElementById('progress').innerText = progress + "%";
 
                 if (offset < file.size) {
                     readSlice(offset);
                 } else {
-                    conn.send({ type: 'done' }); // Transfer bitti
-                    alert("Dosya gönderildi!");
+                    conn.send({ type: 'done' });
+                    alert("Dosya başarıyla gönderildi!");
+                    setTimeout(() => { document.getElementById('progress-container').style.display = 'none'; document.getElementById('progress').style.width = "0%"; }, 2000);
                 }
             }
         };
@@ -221,12 +329,11 @@
             const slice = file.slice(o, o + CHUNK_SIZE);
             reader.readAsArrayBuffer(slice);
         };
-
         readSlice(0);
     }
 
     // ==========================================
-    // ALŞ09: Roller ve QR Kod İşlemleri
+    // QR KOD İŞLEMLERİ
     // ==========================================
     function modSec(mod) {
         document.getElementById('hoca-mod').classList.add('hidden');
@@ -235,13 +342,16 @@
     }
 
     function qrKodUret() {
-        // Hocanın PeerJS ID'sini QR koda gömüyoruz
         const myId = peer.id;
+        if(!myId) return alert("ID henüz oluşmadı, lütfen bekleyin.");
+        
         document.getElementById("qrcode-hoca").innerHTML = "";
         new QRCode(document.getElementById("qrcode-hoca"), {
             text: myId,
             width: 200,
-            height: 200
+            height: 200,
+            colorDark : "#1F2937",
+            colorLight : "#ffffff",
         });
     }
 
@@ -256,7 +366,9 @@
             (decodedText) => {
                 html5QrCode.stop();
                 document.getElementById('qr-result').classList.remove('hidden');
-                document.getElementById('qr-result').innerHTML = `<strong>Hoca ID Okundu:</strong> ${decodedText}<br><br><button onclick="otomatikBaglan('${decodedText}')">Hocaya Bağlan</button>`;
+                document.getElementById('qr-result').innerHTML = `
+                    <p style="color:var(--success); font-weight:600; margin-bottom:10px;">Hoca ID Okundu!</p>
+                    <button onclick="otomatikBaglan('${decodedText}')" class="btn btn-success">Hocaya Bağlan</button>`;
             },
             (err) => { /* Hata yoksay */ }
         ).catch(err => alert("Kamera açılamadı: " + err));
@@ -264,7 +376,7 @@
 
     function otomatikBaglan(targetId) {
         document.getElementById('qr-result').classList.add('hidden');
-        uygulamaAc('als08'); // ALŞ08 ekranına geç
+        uygulamaAc('als08'); 
         document.getElementById('peer-id-input').value = targetId;
         baglan();
     }
